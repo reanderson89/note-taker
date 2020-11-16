@@ -139,6 +139,7 @@ const getAndRenderNotes = () => {
   return getNotes().then(renderNoteList);
 };
 
+
 $saveNoteBtn.on("click", handleNoteSave);
 $noteList.on("click", ".list-group-item", handleNoteView);
 $newNoteBtn.on("click", handleNewNoteView);
@@ -148,3 +149,11 @@ $noteText.on("keyup", handleRenderSaveBtn);
 
 // Gets and renders the initial list of notes
 getAndRenderNotes();
+
+// module.exports = {
+//   getNotes,
+//   saveNote,
+//   deleteNote,
+//   getAndRenderNotes,
+//   renderNoteList
+// };

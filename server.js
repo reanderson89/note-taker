@@ -2,12 +2,13 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const notesDB = require("./db/db.json");
+// const notesDB = require("./db/db.json");
+// const index = require("./assets/js/index");
 const app = express();
 
 const PORT = process.env.PORT || 8080;
 
-let rawNotes = fs.readFileSync("db/db.json");
+let rawNotes = fs.readFileSync("./db/db.json");
 let notes = JSON.parse(rawNotes);
 
 // middleware to parse incoming body
@@ -37,9 +38,23 @@ app.get("/api/notes", (req,res) => {
 });
 
 app.post("/api/notes", (req,res) => {
-notesDB.push(req.body);
-return res.json(notesDB);
-})
+let newNote = req.body;
+newId = notes[notes.length-1].id+1;
+newNote["id"] = newId;
+notes.push(newNote);
+fs.writeFileSync("./db/db.json", JSON.stringify(notes));
+console.log(notes);
+return res.json(notes);
+});
+
+app.delete("/api/notes/:id", (req,res) => {
+let notes2 = notes.filter(function(obj) {
+    console.log(req.params.id);
+    return obj.id != req.params.id;
+});
+fs.writeFileSync("./db/db.json", JSON.stringify(notes2));
+return res.json(notes2);
+});
 
 app.listen(PORT, function() {
     console.log(`App listening on server http://localhost:${PORT}`);

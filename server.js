@@ -3,9 +3,13 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const util = require("util");
+// module that creates unique ID's (Example: "dbb1a10e-2ded-48b5-ac9e-a6c5d3371729")
+const { v4: uuidv4 } = require('uuid');
 let notesDB = require("./db/db.json");
 const app = express();
 const writeFileAsync = util.promisify(fs.writeFile);
+
+let id;
 
 const PORT = process.env.PORT || 8080;
 
@@ -38,16 +42,28 @@ app.get("/api/notes", (req,res) => {
 
 // this takes in the users note, gives it an id, and then pushes the object into the notesDB array
 app.post("/api/notes", (req,res) => {
-    console.log('this posted');
-let note = req.body;
-let id = notesDB[notesDB.length-1].id+1;
-note.id = id;
+    // function that checks to see if the id already exists
+    let hasId = (data, id) => {
+        return data.some((el) =>{
+            return el.id === id;
+        })
+    }
+    let note = req.body;
+    id = uuidv4();
+    // checks to see if the id being made matches any other id, if it does then this will create a different id. This is not perfect since there is a chance that it could create yet another id that matches, but with the id's being like this "0accba13-a003-4b81-8ef4-341e8dbd0a41" the chances are very slim, but still present.
+    if (hasId(notesDB, id)){
+        id = uuidv4();
+    } 
+    console.log(hasId(notesDB, id));
+    note.id = id;
 notesDB.push(note);
 writeFileAsync("./db/db.json", JSON.stringify(notesDB))
             .then(() => {
                 res.json(note);
             })
             .catch((err) => console.log(err));
+// let id = notesDB[notesDB.length-1].id+1;
+
 });
 
 // this creates a new array called 'notes2' after filtering through notesDB and only taking those that don't match the chosen id. Thus deleting the chosen id from the array

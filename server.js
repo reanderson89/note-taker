@@ -2,30 +2,37 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-// const notesDB = require("./db/db.json");
+const util = require("util");
+let notesDB = require("./db/db.json");
 // const index = require("./assets/js/index");
 const app = express();
+const writeFileAsync = util.promisify(fs.writeFile);
 
 const PORT = process.env.PORT || 8080;
 
-let rawNotes = fs.readFileSync("./db/db.json");
-let notes = JSON.parse(rawNotes);
+// let rawNotes = fs.readFileSync("./db/db.json");
+// let notes = JSON.parse(rawNotes);
 
 // middleware to parse incoming body
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 
 // view routes
-app.get("/", (req,res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
+// app.get("*", (req,res) => {
+//     res.sendFile(path.join(__dirname, "public/index.html"));
+// });
 
 app.get("/notes", (req,res) => {
     res.sendFile(path.join(__dirname, "notes.html"));
 });
 
+app.get("/", (req,res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
+
 app.get("/assets/js/index.js", (req,res) => {
-    res.sendFile(path.join(__dirname, "assets/js/index.js"));
+    res.sendFile(path.join(__dirname, "/assets/js/index.js"));
 });
 
 app.get("/assets/css/styles.css", (req,res) => {
@@ -34,29 +41,33 @@ app.get("/assets/css/styles.css", (req,res) => {
 
 // api routes
 app.get("/api/notes", (req,res) => {
-    return res.json(notes);
+     res.json(notesDB);
 });
 
 app.post("/api/notes", (req,res) => {
-let newNote = req.body;
-newId = notes[notes.length-1].id+1;
-newNote["id"] = newId;
-notes.push(newNote);
-fs.writeFileSync("./db/db.json", JSON.stringify(notes));
-console.log(notes);
-return res.json(notes);
+let note = req.body;
+let id = notesDB[notesDB.length-1].id+1;
+note.id = id;
+notesDB.push(note);
+writeFileAsync("./db/db.json", JSON.stringify(notesDB))
+            .then(() => {
+                res.json(note);
+            })
+            .catch((err) => console.log(err));
 });
 
 app.delete("/api/notes/:id", (req,res) => {
-let notes2 = notes.filter(function(obj) {
-    console.log(req.params.id);
-    return obj.id != req.params.id;
+    let notes2 = notesDB.filter(note => note.id != req.params.id);
+
+notesDB=notes2;
+writeFileAsync("./db/db.json", JSON.stringify(notesDB)).then(() => {
+    res.json(notesDB);
+}).catch((error) => {
+    console.log(error);
 });
-fs.writeFileSync("./db/db.json", JSON.stringify(notes2));
-return res.json(notes2);
 });
 
-app.listen(PORT, function() {
+app.listen(PORT, () => {
     console.log(`App listening on server http://localhost:${PORT}`);
   });
 

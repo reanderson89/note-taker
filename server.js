@@ -3,7 +3,6 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const util = require("util");
-// module that creates unique ID's (Example: "dbb1a10e-2ded-48b5-ac9e-a6c5d3371729")
 const { v4: uuidv4 } = require('uuid');
 let notesDB = require("./db/db.json");
 const app = express();
@@ -62,7 +61,6 @@ writeFileAsync("./db/db.json", JSON.stringify(notesDB))
                 res.json(note);
             })
             .catch((err) => console.log(err));
-// let id = notesDB[notesDB.length-1].id+1;
 
 });
 
